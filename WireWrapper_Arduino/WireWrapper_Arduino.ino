@@ -31,6 +31,7 @@
  */
 
 LiquidCrystal lcd(RS, EN, D4, D5, D6, D7);
+// Variabili per eventi dei pulsanti
 bool b1p, b2p, b3p, b4p;
 long b1m, b2m, b3m, b4m;
 
@@ -55,35 +56,24 @@ void setup() {
 int bc = 0;
 
 void b1_press() {
-  lcd.clear();
-  lcd.print("Button 1");
-  lcd.setCursor(0, 1);
-  lcd.print(bc++);
+  
 }
 
 void b2_press() {
-  lcd.clear();
-  lcd.print("Button 2");
-  lcd.setCursor(0, 1);
-  lcd.print(bc++);
+  
 }
 
 void b3_press() {
-  lcd.clear();
-  lcd.print("Button 3");
-  lcd.setCursor(0, 1);
-  lcd.print(bc++);
+  
 }
 
 void b4_press() {
-  lcd.clear();
-  lcd.print("Button 4");
-  lcd.setCursor(0, 1);
-  lcd.print(bc++);
+  
 }
 
 
 void loop() {
+  // Gestione eventi pulsanti
   if(digitalRead(BT_1) && !b1p) {
     b1p = true;
     b1m = micros();
@@ -124,7 +114,9 @@ void loop() {
     if(micros()-b4m >= DEBOUNCE_US)
       b4p = false;
   }
+  // Fine eventi pulsanti
 
+  
 }
 
 void encoderInterrupt() {
