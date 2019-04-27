@@ -1,7 +1,12 @@
 package com.fraioveio.wirewrappercontroller.gui;
 
-public class ControllerFrame extends javax.swing.JFrame {
+import gnu.io.CommPortIdentifier;
+import java.util.Enumeration;
+import javax.swing.JOptionPane;
 
+public class ControllerFrame extends javax.swing.JFrame {
+    public String porta = null;
+    
     public ControllerFrame() {
         initComponents();
     }
@@ -28,7 +33,9 @@ public class ControllerFrame extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
+        jMenuItem5 = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
         jMenuItem3 = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         jMenuItem4 = new javax.swing.JMenuItem();
@@ -144,8 +151,22 @@ public class ControllerFrame extends javax.swing.JFrame {
 
         jMenu2.setText("Impostazioni");
 
+        jMenuItem5.setText("Lista porte");
+        jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem5ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem5);
+
         jMenuItem2.setText("Porta seriale");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
         jMenu2.add(jMenuItem2);
+        jMenu2.add(jSeparator1);
 
         jMenuItem3.setText("Correzione accelerazione");
         jMenu2.add(jMenuItem3);
@@ -185,6 +206,21 @@ public class ControllerFrame extends javax.swing.JFrame {
         dispose();
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        porta = JOptionPane.showInputDialog("Porta: ");
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
+        Enumeration<CommPortIdentifier> portEnum = CommPortIdentifier.getPortIdentifiers();
+        String lp = "";
+        while (portEnum.hasMoreElements()) {
+            CommPortIdentifier portIdentifier = portEnum.nextElement();
+            lp += portIdentifier.getName() + "\n";
+        }
+        
+        JOptionPane.showMessageDialog(this, lp, "Porte", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_jMenuItem5ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
@@ -200,11 +236,13 @@ public class ControllerFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
+    private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JRadioButton jRadioButton2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JSpinner jSpinner1;
     private javax.swing.ButtonGroup tempoAngoliButtonGroup;
     // End of variables declaration//GEN-END:variables
