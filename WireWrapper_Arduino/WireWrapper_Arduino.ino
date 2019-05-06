@@ -36,6 +36,8 @@ bool refreshMenu;
 bool insideProgram;
 int programId, totPrograms, programSize;
 
+byte selectedFirstByte;
+
 void setup() {
   b1p = b2p = b3p = b4p;
   
@@ -62,7 +64,10 @@ void setup() {
 int bc = 0;
 
 void b1_press() {
-  
+  if(!insideProgram) {
+    insideProgram = true;
+    refreshMenu = true;
+  }
 }
 
 void b2_press() {
@@ -87,6 +92,10 @@ void b4_press() {
     if(programId >= totPrograms) {
       programId = 0;
     }
+    refreshMenu = true;
+  } else {
+    // TODO: Metti i controlli se è ancora attivo
+    insideProgram = false;
     refreshMenu = true;
   }
 }
@@ -148,8 +157,8 @@ void loop() {
 
 void printMenu() {
   refreshMenu = false;
+  lcd.clear();
   if(!insideProgram) {
-    lcd.clear();
     lcd.print("Programma ");
     lcd.print(programId+1);
     lcd.print("/");
@@ -157,17 +166,16 @@ void printMenu() {
     
     lcd.setCursor(0, 1);
     if(totPrograms != 0) {
-      byte a;
       int count = 0;
       for(int i=0;i<EEPROM.length();i+=50) {
-        if((a = EEPROM.read(i)) != 0) {
+        if((selectedFirstByte = EEPROM.read(i)) != 0) {
           count ++;
         }
         if(count-1 == programId) {
           break;
         }
       }
-      if(programType(a))
+      if(programType(selectedFirstByte))
         lcd.print("Angoli: ");
       else
         lcd.print("Tempi: ");
@@ -177,7 +185,15 @@ void printMenu() {
     }
   } else {
     // Inside program
+    lcd.print("Programma ");
+    lcd.print(programId + 1);
+    if(programType(selectedFirstByte))
+      lcd.print(" Ang");
+    else
+      lcd.print(" Time");
     
+    lcd.setCursor(0, 1);
+    lcd.print("Start Stop Exit");
   }
 }
 
