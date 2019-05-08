@@ -153,6 +153,9 @@ void loop() {
   if(Serial.available()) {
     byte cmd = Serial.read();
     if(cmd == 65) { // Read EEPROM
+      lcd.clear();
+      lcd.print("Reading EEPROM..");
+      printMenu();
       int size = EEPROM.length();
       Serial.write((char*)(&size), sizeof(int));
       for(int i=0;i<EEPROM.length();i++) {
@@ -161,8 +164,39 @@ void loop() {
     }
 
     if(cmd == 66) { // Test Connection
+      lcd.clear();
+      lcd.print("Test connection");
       while(!Serial.available());
       Serial.write(Serial.read());
+      
+      printMenu();
+    }
+
+    if(cmd == 67) { // Read a program
+      lcd.clear();
+      lcd.print("Reading program...");
+      while(!Serial.available());
+      int id = Serial.read();
+      for(int i=id*50;i<(id+1)*50;i++) {
+        Serial.write(EEPROM.read(i));
+      }
+      
+      printMenu();
+    }
+
+    if(cmd == 68) { // Write a program
+      lcd.clear();
+      lcd.print("Writing program...");
+      while(!Serial.available());
+      byte id = Serial.read();
+      for(int i=id*50;i<(id+1)*50;i++) {
+        while(!Serial.available());
+        byte b = Serial.read();
+        if(EEPROM.read(i) != b)
+          EEPROM.write(i, b);
+      }
+      
+      printMenu();
     }
   }
 }
