@@ -15,15 +15,15 @@
 #define D7 2
 
 #define DEBOUNCE_US (long)200*1000
-
+#define PROGRAMSIZE 101  // 1 control + 25 comandi da 4 byte, 10 programmi totali
 
 /*
  * EEPROM Addresses
  * 
- * Programmi lunghi 50 byte, totale 20 programmi
+ * Programmi lunghi PROGRAMSIZE byte, totale 1024/PROGRAMSIZE programmi
  * 
  * byte 0 = 0 0xS<lunghezza> dove S vale 0 se è controllato in tempo e 1 se in angoli;
- * byte 1...49 angolo o tempo
+ * byte 1...PROGRAMSIZE-1 angolo o tempo
  */
 
 LiquidCrystal lcd(RS, EN, D4, D5, D6, D7);
@@ -57,7 +57,7 @@ void setup() {
   // Inizializzo menu
   refreshMenu = insideProgram = false;
   programId = 0;
-  totPrograms = 20;
+  totPrograms = EEPROM.length()/PROGRAMSIZE;
   printMenu();
 }
 
@@ -177,7 +177,8 @@ void loop() {
       lcd.print("Reading program...");
       while(!Serial.available());
       int id = Serial.read();
-      for(int i=id*50;i<(id+1)*50;i++) {
+      Serial.write(PROGRAMSIZE);
+      for(int i=id*PROGRAMSIZE;i<(id+1)*PROGRAMSIZE;i++) {
         Serial.write(EEPROM.read(i));
       }
       
@@ -189,7 +190,7 @@ void loop() {
       lcd.print("Writing program...");
       while(!Serial.available());
       byte id = Serial.read();
-      for(int i=id*50;i<(id+1)*50;i++) {
+      for(int i=id*PROGRAMSIZE;i<(id+1)*PROGRAMSIZE;i++) {
         while(!Serial.available());
         byte b = Serial.read();
         if(EEPROM.read(i) != b)
@@ -213,7 +214,7 @@ void printMenu() {
     lcd.setCursor(0, 1);
     if(totPrograms != 0) {
       int count = 0;
-      byte info = EEPROM.read(programId * 50);
+      byte info = EEPROM.read(programId * PROGRAMSIZE);
       if(info == 0)
         lcd.print("_Vuoto_");
       else {
