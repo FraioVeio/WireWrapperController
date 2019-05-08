@@ -14,8 +14,8 @@
 #define D6 3
 #define D7 2
 
-#define DEBOUNCE_US (long)200*1000
-#define RELAY_TIME_ON 100000
+#define DEBOUNCE_US 200e+3
+#define RELAY_TIME_ON 150e+3
 #define PROGRAMSIZE 101  // 1 control + 25 comandi da 4 byte, 10 programmi totali
 
 /*
@@ -93,6 +93,7 @@ void b1_press() {
 
 void b2_press() {
   if(insideProgram) {
+    // Stop
     started = false;
     relayOn = false;
     relayTime = -1;
@@ -115,6 +116,7 @@ void b3_press() {
     }
     refreshMenu = true;
   } else {
+    // Stop
     started = false;
     relayOn = false;
     relayTime = -1;
@@ -132,9 +134,17 @@ void b4_press() {
     }
     refreshMenu = true;
   } else {
-    // TODO: Metti i controlli se è ancora attivo
-    insideProgram = false;
-    refreshMenu = true;
+    if(!started) {
+      insideProgram = false;
+      refreshMenu = true;
+    } else {
+      // Stop
+      started = false;
+      relayOn = false;
+      relayTime = -1;
+      refreshMenu = true;
+      digitalWrite(RELAY, LOW);
+    }
   }
 }
 
@@ -267,6 +277,7 @@ void loop() {
     if(!type) {
       // Programma a tempo
       if((timeNew-timeOld)/1000000.0 >= currentValue) {
+        // Step successivo
         cStep ++;
         if(cStep >= nSteps)
           cStep = 0;
@@ -275,6 +286,13 @@ void loop() {
         currentValue = getCurrentProgramValue();
         relayOn = true;
         relayTime = micros();
+
+        lcd.setCursor(0, 1);
+        lcd.print("      ");
+        lcd.setCursor(0, 1);
+        lcd.print(cStep);
+        lcd.print(": ");
+        lcd.print(currentValue);
       }
     }
   }
@@ -314,9 +332,9 @@ void printMenu() {
     
     lcd.setCursor(0, 1);
     if(started) {
-      lcd.print("      Stop Exit");
+      lcd.print("            Stop");
     } else {
-      lcd.print("Start      Exit");
+      lcd.print("Start      Exit ");
     }
   }
 }
