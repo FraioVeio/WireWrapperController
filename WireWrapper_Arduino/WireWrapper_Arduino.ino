@@ -188,15 +188,16 @@ void loop() {
     if(cmd == 68) { // Write a program
       lcd.clear();
       lcd.print("Writing program...");
-      while(Serial.available() < 2);
-      byte id = Serial.read();
-      byte first = Serial.read();
-      EEPROM.write(id*PROGRAMSIZE, first);
+      while(Serial.available() < 3);
+      byte id = Serial.read();  // Invia ID
+      byte first = (Serial.read()==0 ? 0b00000000 : 0b10000000) | Serial.read();  // Invia tipo, poi lunghezza (/4 byte)
+      if(EEPROM.read(id*PROGRAMSIZE) != first)
+        EEPROM.write(id*PROGRAMSIZE, first);
       
       byte sz = first & 0b01111111;
-      for(int i=id*PROGRAMSIZE+1;i<id*PROGRAMSIZE+sz;i++) {
+      for(int i=id*PROGRAMSIZE+1;i<id*PROGRAMSIZE+sz*4;i++) {
         while(!Serial.available());
-        byte b = Serial.read();
+        byte b = Serial.read(); // Invia robe
         if(EEPROM.read(i) != b)
           EEPROM.write(i, b);
       }
@@ -226,7 +227,7 @@ void printMenu() {
           lcd.print("Angoli: ");
         else
           lcd.print("Tempi: ");
-        programSize = a & 0b01111111;
+        programSize = (a & 0b01111111);
         lcd.print(programSize);
       }
     }
