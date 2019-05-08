@@ -224,8 +224,13 @@ void loop() {
       lcd.print("Reading program...");
       while(!Serial.available());
       int id = Serial.read();
-      Serial.write(PROGRAMSIZE);
-      for(int i=id*PROGRAMSIZE;i<(id+1)*PROGRAMSIZE;i++) {
+
+      byte info = EEPROM.read(PROGRAMSIZE*id);
+
+      Serial.write(programType(info) ? 1 : 0);  // Write program type
+      Serial.write(info & 0b01111111);  // Write program size
+      
+      for(int i=id*PROGRAMSIZE+1;i<id*PROGRAMSIZE + (info & 0b01111111)*4;i++) {
         Serial.write(EEPROM.read(i));
       }
       
