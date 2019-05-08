@@ -46,7 +46,11 @@ public class SerialConnection {
         try {
             out.write(66);  // Test cmd
             out.write(12);
-            while(in.available() == 0);
+            while(in.available() == 0) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException ex) {}
+            }
             int r = in.read();
             return r == 12;
         } catch (IOException ex) {
