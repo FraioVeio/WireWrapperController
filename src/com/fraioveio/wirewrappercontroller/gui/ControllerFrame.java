@@ -12,7 +12,14 @@ public class ControllerFrame extends javax.swing.JFrame {
     public ControllerFrame() {
         initComponents();
     }
-
+    
+    void readProgram() {
+        list.clear();
+        boolean type = SerialConnection.readSlot(slot-1, list);
+        angleRadio.setSelected(type);
+        timeRadio.setSelected(!type);
+        jList.updateUI();
+    }
     
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -38,6 +45,7 @@ public class ControllerFrame extends javax.swing.JFrame {
         jLabel7 = new javax.swing.JLabel();
         saveButton = new javax.swing.JButton();
         loadButton = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -45,6 +53,8 @@ public class ControllerFrame extends javax.swing.JFrame {
         jMenuItem5 = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenuItem6 = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        jMenuItem7 = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         jMenuItem3 = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
@@ -119,13 +129,27 @@ public class ControllerFrame extends javax.swing.JFrame {
         jLabel7.setText("Stato:");
 
         saveButton.setText("Salva");
+        saveButton.setEnabled(false);
         saveButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveButtonActionPerformed(evt);
             }
         });
 
-        loadButton.setText("Reset");
+        loadButton.setText("Leggi");
+        loadButton.setEnabled(false);
+        loadButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadButtonActionPerformed(evt);
+            }
+        });
+
+        jButton3.setText("Svuota");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -141,12 +165,13 @@ public class ControllerFrame extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(valueSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(saveButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(loadButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(loadButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel2Layout.createSequentialGroup()
@@ -195,7 +220,9 @@ public class ControllerFrame extends javax.swing.JFrame {
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jButton2)
-                        .addGap(47, 47, 47)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton3)
+                        .addGap(33, 33, 33)
                         .addComponent(saveButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(loadButton))))
@@ -240,7 +267,8 @@ public class ControllerFrame extends javax.swing.JFrame {
         });
         jMenu2.add(jMenuItem5);
 
-        jMenuItem2.setText("Porta seriale");
+        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem2.setText("Connetti a porta");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem2ActionPerformed(evt);
@@ -255,6 +283,15 @@ public class ControllerFrame extends javax.swing.JFrame {
             }
         });
         jMenu2.add(jMenuItem6);
+        jMenu2.add(jSeparator2);
+
+        jMenuItem7.setText("Formatta memoria");
+        jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem7ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem7);
         jMenu2.add(jSeparator1);
 
         jMenuItem3.setText("Correzione accelerazione");
@@ -298,7 +335,12 @@ public class ControllerFrame extends javax.swing.JFrame {
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         porta = JOptionPane.showInputDialog("Porta: ");
         SerialConnection.close();
-        SerialConnection.connect(porta);
+        if(SerialConnection.connect(porta)) {
+            connectionStatusLabel.setText("Connesso");
+            saveButton.setEnabled(true);
+            loadButton.setEnabled(true);
+            readProgram();
+        }
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
@@ -320,13 +362,9 @@ public class ControllerFrame extends javax.swing.JFrame {
     private void slotSpinnerPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_slotSpinnerPropertyChange
         if((int)slotSpinner.getValue() != slot) {
             slot = (int) slotSpinner.getValue();
-            if(slot < 1) {
-                slot = 10;
-                slotSpinner.setValue(slot);
-            }
-            if(slot > 10) {
-                slot = 1;
-                slotSpinner.setValue(slot);
+            
+            if(SerialConnection.isConnected()) {
+                readProgram();
             }
         }
     }//GEN-LAST:event_slotSpinnerPropertyChange
@@ -358,19 +396,52 @@ public class ControllerFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        float[] f = new float[list.size()];
-        for(int i=0;i<list.size();i++) {
-            f[i] = Float.parseFloat(list.get(i));
+        if (!list.isEmpty()) {
+            float[] f = new float[list.size()];
+            for (int i = 0; i < list.size(); i++) {
+                f[i] = Float.parseFloat(list.get(i));
+            }
+            if (!SerialConnection.saveSlot(slot - 1, angleRadio.isSelected(), f)) {
+                JOptionPane.showMessageDialog(this, "Impossibile salvare", "Errore", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Salvato correttamente", "Info", JOptionPane.INFORMATION_MESSAGE);
+            }
+        } else {
+            if (!SerialConnection.saveSlot(slot - 1, false, new float[0])) {
+                JOptionPane.showMessageDialog(this, "Impossibile svuotare", "Errore", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Svuotato correttamente", "Info", JOptionPane.INFORMATION_MESSAGE);
+            }
         }
-        if(!SerialConnection.saveSlot(slot-1, angleRadio.isSelected(), f))
-            JOptionPane.showMessageDialog(this, "Impossibile salvare", "Errore", JOptionPane.ERROR_MESSAGE);
     }//GEN-LAST:event_saveButtonActionPerformed
+
+    private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButtonActionPerformed
+        readProgram();
+    }//GEN-LAST:event_loadButtonActionPerformed
+
+    private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
+        if(SerialConnection.isConnected()) {
+            if(JOptionPane.showConfirmDialog(this, "Vuoi davvero cancellare la memoria?", "ATTENZIONE", JOptionPane.YES_NO_OPTION) == 0) {
+                for(int i=0;i<10;i++)
+                    SerialConnection.saveSlot(i, false, new float[0]);
+                JOptionPane.showMessageDialog(this, "Compleatato", "Ok", JOptionPane.INFORMATION_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Prima connettiti", "Info", JOptionPane.WARNING_MESSAGE);
+        }
+    }//GEN-LAST:event_jMenuItem7ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        list.clear();
+        jList.updateUI();
+    }//GEN-LAST:event_jButton3ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton angleRadio;
     private javax.swing.JLabel connectionStatusLabel;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -388,10 +459,12 @@ public class ControllerFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JMenuItem jMenuItem6;
+    private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JButton loadButton;
     private javax.swing.JButton saveButton;
     private javax.swing.JSpinner slotSpinner;

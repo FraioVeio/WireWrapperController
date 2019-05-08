@@ -10,6 +10,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import javax.swing.JOptionPane;
 
@@ -66,7 +67,7 @@ public class SerialConnection {
                 
                 if (commPort instanceof SerialPort) {
                     SerialPort serialPort = (SerialPort) commPort;
-                    serialPort.setSerialPortParams(57600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+                    serialPort.setSerialPortParams(9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
                     
                     in = new DataInputStream(serialPort.getInputStream());
                     out = new DataOutputStream(serialPort.getOutputStream());
@@ -91,6 +92,10 @@ public class SerialConnection {
         }
         
         return true;
+    }
+    
+    public static boolean isConnected() {
+        return in != null;
     }
     
     public static void close() {
@@ -119,6 +124,30 @@ public class SerialConnection {
         }
         
         return true;
+    }
+    
+    public static boolean readSlot(int slot, ArrayList<String> data) {
+        try {
+            out.write(67);  // Read program command
+            out.write(slot);    // Program id
+            
+            while(in.available() == 0) {
+                Thread.sleep(1);
+            }
+            boolean type = in.read() != 0;
+            while(in.available() == 0) {
+                Thread.sleep(1);
+            }
+            int size = in.read();
+            
+            for(int i=0;i<size;i++) {
+                data.add("" + in.readFloat());
+            }
+            
+            return type;
+        } catch (Exception ex) {}
+        
+        return false;
     }
     
     public static byte[] floatToBytes(float n) {
