@@ -57,7 +57,7 @@ void setup() {
   // Inizializzo menu
   refreshMenu = insideProgram = false;
   programId = 0;
-  totPrograms = countPrograms();
+  totPrograms = 20;
   printMenu();
 }
 
@@ -179,21 +179,17 @@ void printMenu() {
     lcd.setCursor(0, 1);
     if(totPrograms != 0) {
       int count = 0;
-      for(int i=0;i<EEPROM.length();i+=50) {
-        if((selectedFirstByte = EEPROM.read(i)) != 0) {
-          count ++;
-        }
-        if(count-1 == programId) {
-          break;
-        }
+      byte info = EEPROM.read(programId * 50);
+      if(info == 0)
+        lcd.print("_Vuoto_");
+      else {
+        if(programType(info))
+          lcd.print("Angoli: ");
+        else
+          lcd.print("Tempi: ");
+        programSize = a & 0b01111111;
+        lcd.print(programSize);
       }
-      if(programType(selectedFirstByte))
-        lcd.print("Angoli: ");
-      else
-        lcd.print("Tempi: ");
-
-      programSize = a & 0b01111111;
-      lcd.print(programSize);
     }
   } else {
     // Inside program
@@ -209,18 +205,8 @@ void printMenu() {
   }
 }
 
-boolean programType(byte b) {
+boolean programType(byte b) { // True angoli
   return (b & 0b10000000) != 0;
-}
-
-int countPrograms() {
-  int count = 0;
-  for(int i=0;i<EEPROM.length();i+=50) {
-    if(EEPROM.read(i) != 0) {
-      count ++;
-    }
-  }
-  return count;
 }
 
 void formatEeprom() {
