@@ -1,0 +1,164 @@
+package com.fraioveio.wirewrappercontroller;
+
+import gnu.io.CommPort;
+import gnu.io.CommPortIdentifier;
+import gnu.io.NoSuchPortException;
+import gnu.io.PortInUseException;
+import gnu.io.SerialPort;
+import gnu.io.UnsupportedCommOperationException;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import javax.swing.JOptionPane;
+
+public class SerialConnection {
+    private static volatile String portlist;
+    private static DataInputStream in;
+    private static DataOutputStream out;
+    private static CommPort commPort;
+    
+    public static String getPortList() {
+        while(portlist == null) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException ex) {}
+        }
+        return portlist;
+    }
+    
+    public static void refreshPortList() {
+        Enumeration<CommPortIdentifier> portEnum = CommPortIdentifier.getPortIdentifiers();
+        String lp = "";
+        while (portEnum.hasMoreElements()) {
+            CommPortIdentifier portIdentifier = portEnum.nextElement();
+            lp += portIdentifier.getName() + "\n";
+        }
+        
+        portlist = lp;
+    }
+    
+    public static boolean test() {
+        try {
+            out.write(66);  // Test cmd
+            out.write(12);
+            while(in.available() == 0) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException ex) {}
+            }
+            int r = in.read();
+            return r == 12;
+        } catch (IOException ex) {
+            return false;
+        }
+    }
+    
+    public static boolean connect(String portname) {
+        try {
+            CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portname);
+            if (portIdentifier.isCurrentlyOwned()) {
+                JOptionPane.showMessageDialog(null, "La porta è in uso da un altro processo", "Errore", JOptionPane.ERROR_MESSAGE);
+                return false;
+            } else {
+                commPort = portIdentifier.open("WireWrapper", 2000);
+                
+                if (commPort instanceof SerialPort) {
+                    SerialPort serialPort = (SerialPort) commPort;
+                    serialPort.setSerialPortParams(9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+                    
+                    in = new DataInputStream(serialPort.getInputStream());
+                    out = new DataOutputStream(serialPort.getOutputStream());
+                    
+                } else {
+                    JOptionPane.showMessageDialog(null, "Impossibile gestire porte non seriali", "Errore", JOptionPane.ERROR_MESSAGE);
+                    return false;
+                }
+            }            
+        } catch (NoSuchPortException noSuchPortException) {
+            JOptionPane.showMessageDialog(null, "La porta non esiste", "Errore", JOptionPane.ERROR_MESSAGE);
+            noSuchPortException.printStackTrace();
+            return false;
+        } catch (PortInUseException portInUseException) {
+            JOptionPane.showMessageDialog(null, "La porta è in uso da un altro processo", "Errore", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(null, ex.toString(), "Errore", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } catch (UnsupportedCommOperationException ex) {
+            JOptionPane.showMessageDialog(null, ex.toString(), "Errore", JOptionPane.ERROR_MESSAGE);
+        }
+        
+        return true;
+    }
+    
+    public static boolean isConnected() {
+        return in != null;
+    }
+    
+    public static void close() {
+        try {
+            in.close();
+            out.close();
+            commPort.close();
+        } catch (IOException | NullPointerException ex) {}
+    }
+    
+    public static boolean saveSlot(int slot, boolean type, float[] data) {
+        try {
+            out.write(68);  // Write command
+            out.write(slot);
+            out.write(type ? 1 : 0);    // Write type
+            out.write(data.length);     // Write dataLength
+            
+            System.out.println("Invio dati");
+            for(float n : data) {
+                out.writeFloat(n);
+                System.out.println(n);
+            }
+            
+        } catch (IOException | NullPointerException ex) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    public static boolean readSlot(int slot, ArrayList<String> data) {
+        try {
+            out.write(67);  // Read program command
+            out.write(slot);    // Program id
+            
+            while(in.available() == 0) {
+                Thread.sleep(1);
+            }
+            boolean type = in.read() != 0;
+            while(in.available() == 0) {
+                Thread.sleep(1);
+            }
+            int size = in.read();
+            
+            for(int i=0;i<size;i++) {
+                while(in.available() == 0) {
+                    Thread.sleep(1);
+                }
+                data.add("" + in.readFloat());
+            }
+            return type;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        return false;
+    }
+    
+    public static byte[] floatToBytes(float n) {
+        return ByteBuffer.allocate(4).putFloat(n).array();
+    }
+    
+    public static float bytesToFloat(byte[] b) {
+        return ByteBuffer.wrap(b).getFloat();
+    }
+}
