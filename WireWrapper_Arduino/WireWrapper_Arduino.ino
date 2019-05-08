@@ -188,9 +188,11 @@ void loop() {
     if(cmd == 68) { // Write a program
       lcd.clear();
       lcd.print("Writing program...");
-      while(Serial.available() < 3);
+      while(!Serial.available());
       byte id = Serial.read();  // Invia ID
+      while(!Serial.available());
       byte first = (Serial.read()==0 ? 0b00000000 : 0b10000000);  // Invia tipo, poi lunghezza (/4 byte)
+      while(!Serial.available());
       byte sz = Serial.read();
       first = first | sz;
       
