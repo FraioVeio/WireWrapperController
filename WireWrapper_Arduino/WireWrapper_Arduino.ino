@@ -59,6 +59,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(ENCODER), encoderInterrupt, CHANGE);
 
   pinMode(RELAY, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
   pinMode(BT_1, INPUT);
   pinMode(BT_2, INPUT);
   pinMode(BT_3, INPUT);
@@ -99,6 +100,7 @@ void b2_press() {
     relayTime = -1;
     refreshMenu = true;
     digitalWrite(RELAY, LOW);
+    digitalWrite(LED_BUILTIN, LOW);
   } else {
     // RIMUOVIMI
     for(int i=0;i<programSize;i++) {
@@ -122,6 +124,7 @@ void b3_press() {
     relayTime = -1;
     refreshMenu = true;
     digitalWrite(RELAY, LOW);
+    digitalWrite(LED_BUILTIN, LOW);
   }
 }
 
@@ -144,6 +147,7 @@ void b4_press() {
       relayTime = -1;
       refreshMenu = true;
       digitalWrite(RELAY, LOW);
+      digitalWrite(LED_BUILTIN, LOW);
     }
   }
 }
@@ -199,17 +203,7 @@ void loop() {
   // Seriale
   if(Serial.available()) {
     byte cmd = Serial.read();
-    if(cmd == 65) { // Read EEPROM
-      lcd.clear();
-      lcd.print("Reading EEPROM..");
-      printMenu();
-      int size = EEPROM.length();
-      Serial.write((char*)(&size), sizeof(int));
-      for(int i=0;i<EEPROM.length();i++) {
-        Serial.write(EEPROM.read(i));
-      }
-    }
-
+    
     if(cmd == 66) { // Test Connection
       lcd.clear();
       lcd.print("Test connection");
@@ -267,9 +261,11 @@ void loop() {
   if(relayOn) {
     if(micros()-relayTime < RELAY_TIME_ON) {
       digitalWrite(RELAY, HIGH);
+      digitalWrite(LED_BUILTIN, HIGH);
     } else {
       relayOn = false;
       digitalWrite(RELAY, LOW);
+      digitalWrite(LED_BUILTIN, HIGH);
     }
   }
 
