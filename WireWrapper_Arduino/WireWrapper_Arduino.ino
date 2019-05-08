@@ -224,8 +224,12 @@ void loop() {
       Serial.write(programType(info) ? 1 : 0);  // Write program type
       Serial.write(info & 0b01111111);  // Write program size
       
-      for(int i=id*PROGRAMSIZE+1;i<id*PROGRAMSIZE + (info & 0b01111111)*4;i++) {
-        Serial.write(EEPROM.read(i));
+      byte buf[4];
+      for(int i=id*PROGRAMSIZE+1;i<id*PROGRAMSIZE + (info & 0b01111111)*4;i+=4) {
+        for(int y=0;y<4;y++) {
+          buf[y] = EEPROM.read(i+y);
+        }
+        Serial.write(buf, 4);
       }
       
       printMenu();
