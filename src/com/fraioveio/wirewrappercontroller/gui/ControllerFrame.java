@@ -358,13 +358,12 @@ public class ControllerFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        if(timeRadio.isSelected()) {
-            float[] f = new float[list.size()];
-            for(int i=0;i<list.size();i++) {
-                f[i] = Float.parseFloat(list.get(i));
-            }
-            SerialConnection.saveSlot(slot-1, false, f);
+        float[] f = new float[list.size()];
+        for(int i=0;i<list.size();i++) {
+            f[i] = Float.parseFloat(list.get(i));
         }
+        if(!SerialConnection.saveSlot(slot-1, angleRadio.isSelected(), f))
+            JOptionPane.showMessageDialog(this, "Impossibile salvare", "Errore", JOptionPane.ERROR_MESSAGE);
     }//GEN-LAST:event_saveButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

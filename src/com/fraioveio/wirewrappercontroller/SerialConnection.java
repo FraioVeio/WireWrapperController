@@ -11,8 +11,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Enumeration;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 public class SerialConnection {
@@ -116,7 +114,7 @@ public class SerialConnection {
                 System.out.println(n);
             }
             
-        } catch (IOException ex) {
+        } catch (IOException | NullPointerException ex) {
             return false;
         }
         
