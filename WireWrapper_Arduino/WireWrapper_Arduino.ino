@@ -161,7 +161,7 @@ void loop() {
     }
 
     if(cmd == 66) { // Test Connection
-      Serial.println(Serial.read());
+      Serial.write(Serial.read());
     }
   }
 }
