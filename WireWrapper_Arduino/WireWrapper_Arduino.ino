@@ -101,7 +101,7 @@ void b2_press() {
   } else {
     // RIMUOVIMI
     for(int i=0;i<programSize;i++) {
-      Serial.println(eepromReadFloat(programId*PROGRAMSIZE+1 + i*4));
+      Serial.println(eepromReadFloat(programId*PROGRAMSIZE + 1 + i*4));
     }
   }
 }
@@ -336,11 +336,14 @@ float getCurrentProgramValue() {
 }
 
 float eepromReadFloat(int index) {
-  float f;
-  byte *fp = (byte*) &f;
+  float f = 0;
+  byte fp[4];
   for(int i=0;i<4;i++) {
-    fp[i] = EEPROM.read(index+i);
+    fp[3-i] = EEPROM.read(index+i);
   }
+  memcpy(&f, fp, 4);
+  
+  return f;
 }
 
 void encoderInterrupt() {
