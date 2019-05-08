@@ -15,6 +15,7 @@
 #define D7 2
 
 #define DEBOUNCE_US (long)200*1000
+#define RELAY_TIME_ON 100000
 #define PROGRAMSIZE 101  // 1 control + 25 comandi da 4 byte, 10 programmi totali
 
 /*
@@ -37,6 +38,16 @@ bool insideProgram;
 int programId, totPrograms, programSize;
 
 byte selectedFirstByte;
+
+// Program Variables
+bool started = false;
+bool type;
+int cStep;
+int nSteps;
+long timeOld = -1;
+float currentValue;
+boolean relayOn;
+long relayTime;
 
 void setup() {
   b1p = b2p = b3p = b4p;
@@ -67,11 +78,32 @@ void b1_press() {
   if(!insideProgram) {
     insideProgram = true;
     refreshMenu = true;
+  } else {
+    // Start
+    started = true;
+    timeOld = -1;
+    byte info = EEPROM.read(programId*PROGRAMSIZE);
+    type = programType(info);
+    nSteps = (info & 0b01111111);
+    cStep = 0;
+    refreshMenu = true;
+    currentValue = getCurrentProgramValue();
   }
 }
 
 void b2_press() {
-  
+  if(insideProgram) {
+    started = false;
+    relayOn = false;
+    relayTime = -1;
+    refreshMenu = true;
+    digitalWrite(RELAY, LOW);
+  } else {
+    // RIMUOVIMI
+    for(int i=0;i<programSize;i++) {
+      Serial.println(eepromReadFloat(programId*PROGRAMSIZE+1 + i*4));
+    }
+  }
 }
 
 void b3_press() {
@@ -82,6 +114,12 @@ void b3_press() {
       programId = totPrograms-1;
     }
     refreshMenu = true;
+  } else {
+    started = false;
+    relayOn = false;
+    relayTime = -1;
+    refreshMenu = true;
+    digitalWrite(RELAY, LOW);
   }
 }
 
@@ -100,8 +138,6 @@ void b4_press() {
   }
 }
 
-boolean a = false;
-long t = 0;
 void loop() {
   // Gestione eventi pulsanti
   if(digitalRead(BT_1) && !b1p) {
@@ -149,7 +185,8 @@ void loop() {
   // Menu
   if(refreshMenu)
     printMenu();
-  
+
+  // Seriale
   if(Serial.available()) {
     byte cmd = Serial.read();
     if(cmd == 65) { // Read EEPROM
@@ -202,12 +239,43 @@ void loop() {
       
       for(int i=id*PROGRAMSIZE+1;i<id*PROGRAMSIZE+1+sz*4;i++) {
         while(!Serial.available());
-        byte b = Serial.read(); // Invia robe
+        byte b = Serial.read(); // Invia le robe
         if(EEPROM.read(i) != b)
           EEPROM.write(i, b);
       }
       
       printMenu();
+    }
+  }
+
+  // Gestione relay
+  if(relayOn) {
+    if(micros()-relayTime < RELAY_TIME_ON) {
+      digitalWrite(RELAY, HIGH);
+    } else {
+      relayOn = false;
+      digitalWrite(RELAY, LOW);
+    }
+  }
+
+  // Gestione programma
+  if(started) {
+    long timeNew = micros();
+    if(timeOld == -1)
+      timeOld = timeNew;
+
+    if(!type) {
+      // Programma a tempo
+      if((timeNew-timeOld)/1000000.0 >= currentValue) {
+        cStep ++;
+        if(cStep >= nSteps)
+          cStep = 0;
+        timeOld = micros();
+        
+        currentValue = getCurrentProgramValue();
+        relayOn = true;
+        relayTime = micros();
+      }
     }
   }
 }
@@ -223,7 +291,6 @@ void printMenu() {
     
     lcd.setCursor(0, 1);
     if(totPrograms != 0) {
-      int count = 0;
       byte info = EEPROM.read(programId * PROGRAMSIZE);
       if(info == 0)
         lcd.print("_Vuoto_");
@@ -232,7 +299,7 @@ void printMenu() {
           lcd.print("Angoli: ");
         else
           lcd.print("Tempi: ");
-        programSize = (a & 0b01111111);
+        programSize = (info & 0b01111111);
         lcd.print(programSize);
       }
     }
@@ -246,7 +313,11 @@ void printMenu() {
       lcd.print(" Time");
     
     lcd.setCursor(0, 1);
-    lcd.print("Start Stop Exit");
+    if(started) {
+      lcd.print("      Stop Exit");
+    } else {
+      lcd.print("Start      Exit");
+    }
   }
 }
 
@@ -257,6 +328,18 @@ boolean programType(byte b) { // True angoli
 void formatEeprom() {
   for(int i=0;i<EEPROM.length();i++) {
     EEPROM.write(i, 0);
+  }
+}
+
+float getCurrentProgramValue() {
+  return eepromReadFloat(programId*PROGRAMSIZE+1 + cStep*4);
+}
+
+float eepromReadFloat(int index) {
+  float f;
+  byte *fp = (byte*) &f;
+  for(int i=0;i<4;i++) {
+    fp[i] = EEPROM.read(index+i);
   }
 }
 
