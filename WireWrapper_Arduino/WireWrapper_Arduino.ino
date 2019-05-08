@@ -190,12 +190,15 @@ void loop() {
       lcd.print("Writing program...");
       while(Serial.available() < 3);
       byte id = Serial.read();  // Invia ID
-      byte first = (Serial.read()==0 ? 0b00000000 : 0b10000000) | Serial.read();  // Invia tipo, poi lunghezza (/4 byte)
+      byte first = (Serial.read()==0 ? 0b00000000 : 0b10000000);  // Invia tipo, poi lunghezza (/4 byte)
+      byte sz = Serial.read();
+      first = first | sz;
+      
       if(EEPROM.read(id*PROGRAMSIZE) != first)
         EEPROM.write(id*PROGRAMSIZE, first);
       
-      byte sz = first & 0b01111111;
-      for(int i=id*PROGRAMSIZE+1;i<id*PROGRAMSIZE+sz*4;i++) {
+      
+      for(int i=id*PROGRAMSIZE+1;i<id*PROGRAMSIZE+1+sz*4;i++) {
         while(!Serial.available());
         byte b = Serial.read(); // Invia robe
         if(EEPROM.read(i) != b)
