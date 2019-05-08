@@ -30,7 +30,7 @@ public class ControllerFrame extends javax.swing.JFrame {
         jList = new javax.swing.JList<>();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
-        jSpinner1 = new javax.swing.JSpinner();
+        valueSpinner = new javax.swing.JSpinner();
         slotSpinner = new javax.swing.JSpinner();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
@@ -87,9 +87,22 @@ public class ControllerFrame extends javax.swing.JFrame {
         jScrollPane1.setViewportView(jList);
 
         jButton1.setText("Aggiungi");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         jButton2.setText("Rimuovi");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
+        valueSpinner.setModel(new javax.swing.SpinnerNumberModel(0.0f, 0.0f, null, 1.0f));
+
+        slotSpinner.setModel(new javax.swing.SpinnerNumberModel(1, 1, 10, 1));
         slotSpinner.setValue(1);
         slotSpinner.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -99,15 +112,20 @@ public class ControllerFrame extends javax.swing.JFrame {
 
         jLabel4.setText("Slot:");
 
-        jLabel5.setText("/20");
+        jLabel5.setText("/10");
 
         connectionStatusLabel.setText("Disconnesso");
 
         jLabel7.setText("Stato:");
 
         saveButton.setText("Salva");
+        saveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveButtonActionPerformed(evt);
+            }
+        });
 
-        loadButton.setText("Carica");
+        loadButton.setText("Reset");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -121,7 +139,7 @@ public class ControllerFrame extends javax.swing.JFrame {
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jSpinner1, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(valueSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, Short.MAX_VALUE)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -171,16 +189,16 @@ public class ControllerFrame extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(jButton1)
-                    .addComponent(jSpinner1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(valueSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jButton2)
-                        .addGap(18, 18, 18)
-                        .addComponent(loadButton)
+                        .addGap(47, 47, 47)
+                        .addComponent(saveButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(saveButton))))
+                        .addComponent(loadButton))))
         );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -303,15 +321,51 @@ public class ControllerFrame extends javax.swing.JFrame {
         if((int)slotSpinner.getValue() != slot) {
             slot = (int) slotSpinner.getValue();
             if(slot < 1) {
-                slot = 20;
+                slot = 10;
                 slotSpinner.setValue(slot);
             }
-            if(slot > 20) {
+            if(slot > 10) {
                 slot = 1;
                 slotSpinner.setValue(slot);
             }
         }
     }//GEN-LAST:event_slotSpinnerPropertyChange
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        if (list.size() < 25) {
+            int index = jList.getSelectedIndex();
+            
+            if (index == -1 || index >= list.size()) {
+                list.add((float) valueSpinner.getValue() + "");
+                
+                jList.updateUI();
+            } else {
+                list.add(index + 1, (float) valueSpinner.getValue() + "");
+                
+                jList.updateUI();
+                jList.setSelectedIndex(index + 1);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Limite memoria raggiunto", "Attenzione", JOptionPane.WARNING_MESSAGE);
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        if(jList.getSelectedIndex() != -1)
+            list.remove(jList.getSelectedIndex());
+        
+        jList.updateUI();
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
+        if(timeRadio.isSelected()) {
+            float[] f = new float[list.size()];
+            for(int i=0;i<list.size();i++) {
+                f[i] = Float.parseFloat(list.get(i));
+            }
+            SerialConnection.saveSlot(slot-1, false, f);
+        }
+    }//GEN-LAST:event_saveButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton angleRadio;
@@ -339,11 +393,11 @@ public class ControllerFrame extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
-    private javax.swing.JSpinner jSpinner1;
     private javax.swing.JButton loadButton;
     private javax.swing.JButton saveButton;
     private javax.swing.JSpinner slotSpinner;
     private javax.swing.ButtonGroup tempoAngoliButtonGroup;
     private javax.swing.JRadioButton timeRadio;
+    private javax.swing.JSpinner valueSpinner;
     // End of variables declaration//GEN-END:variables
 }

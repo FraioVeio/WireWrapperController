@@ -9,8 +9,7 @@ import gnu.io.UnsupportedCommOperationException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -102,5 +101,33 @@ public class SerialConnection {
             out.close();
             commPort.close();
         } catch (IOException | NullPointerException ex) {}
+    }
+    
+    public static boolean saveSlot(int slot, boolean type, float[] data) {
+        try {
+            out.write(68);  // Write command
+            out.write(slot);
+            out.write(type ? 1 : 0);    // Write type
+            out.write(data.length);     // Write dataLength
+            
+            System.out.println("Invio dati");
+            for(float n : data) {
+                out.writeFloat(n);
+                System.out.println(n);
+            }
+            
+        } catch (IOException ex) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    public static byte[] floatToBytes(float n) {
+        return ByteBuffer.allocate(4).putFloat(n).array();
+    }
+    
+    public static float bytesToFloat(byte[] b) {
+        return ByteBuffer.wrap(b).getFloat();
     }
 }
