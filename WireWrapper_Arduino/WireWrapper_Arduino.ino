@@ -188,9 +188,13 @@ void loop() {
     if(cmd == 68) { // Write a program
       lcd.clear();
       lcd.print("Writing program...");
-      while(!Serial.available());
+      while(Serial.available() < 2);
       byte id = Serial.read();
-      for(int i=id*PROGRAMSIZE;i<(id+1)*PROGRAMSIZE;i++) {
+      byte first = Serial.read();
+      EEPROM.write(id*PROGRAMSIZE, first);
+      
+      byte sz = first & 0b01111111;
+      for(int i=id*PROGRAMSIZE+1;i<id*PROGRAMSIZE+sz;i++) {
         while(!Serial.available());
         byte b = Serial.read();
         if(EEPROM.read(i) != b)
