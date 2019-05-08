@@ -141,6 +141,9 @@ public class SerialConnection {
             int size = in.read();
             
             for(int i=0;i<size;i++) {
+                while(in.available() == 0) {
+                    Thread.sleep(1);
+                }
                 data.add("" + in.readFloat());
             }
             return type;
