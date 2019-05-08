@@ -151,7 +151,18 @@ void loop() {
     printMenu();
   
   if(Serial.available()) {
-    
+    byte cmd = Serial.read();
+    if(cmd == 65) { // Read EEPROM
+      int size = EEPROM.length();
+      Serial.write((char*)(&size), sizeof(int));
+      for(int i=0;i<EEPROM.length();i++) {
+        Serial.write(EEPROM.read(i));
+      }
+    }
+
+    if(cmd == 66) { // Test Connection
+      Serial.println(Serial.read());
+    }
   }
 }
 
