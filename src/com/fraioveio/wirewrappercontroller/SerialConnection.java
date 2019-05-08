@@ -143,9 +143,10 @@ public class SerialConnection {
             for(int i=0;i<size;i++) {
                 data.add("" + in.readFloat());
             }
-            
             return type;
-        } catch (Exception ex) {}
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         
         return false;
     }
